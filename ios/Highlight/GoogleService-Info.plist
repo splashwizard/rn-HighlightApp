@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>975843926360-8gn5rcc7hi52m9npdbr1v5lif9naange.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.975843926360-8gn5rcc7hi52m9npdbr1v5lif9naange</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBMK0KCeSK7ztdfA_Vaku_VMvq5P8OU938</string>
+	<key>GCM_SENDER_ID</key>
+	<string>975843926360</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>org.reactjs.native.example.Highlight</string>
+	<key>PROJECT_ID</key>
+	<string>highlight-ios</string>
+	<key>STORAGE_BUCKET</key>
+	<string>highlight-ios.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:975843926360:ios:2904e793fb86b74170c52d</string>
+	<key>DATABASE_URL</key>
+	<string>https://highlight-ios.firebaseio.com</string>
+</dict>
+</plist>
