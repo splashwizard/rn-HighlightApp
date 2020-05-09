@@ -6,6 +6,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 //Import Page
 import Login from './src/screens/Login';
 import Home from './src/screens/Home';
+import Reply from './src/screens/Reply';
 
 //Import Redux
 import { Provider } from 'react-redux';
@@ -30,6 +31,7 @@ class App extends Component {
                     >
                         <Stack.Screen name="Login" component={Login} />
                         <Stack.Screen name="Home" component={Home} />
+                        <Stack.Screen name="Reply" component={Reply} />
                     </Stack.Navigator>
                 </NavigationContainer>
             </Provider>
