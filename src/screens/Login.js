@@ -118,6 +118,7 @@ class Login extends Component {
                                 headers['from_name'] = from_name;
                                 headers['from_email'] = from_email;
                                 if(/@gmail.com>$/.test(headers['From'])){
+                                    console.log(responseJson);
                                     responseJson.headers = headers;
                                     messages.push(responseJson);
                                 }
