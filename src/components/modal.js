@@ -24,9 +24,11 @@ export class CustomModal extends Component{
         return (
             <Modal
                 visible={this.state.visible}
+                onTouchOutside={() => {
+                    this.props.close();
+                  }}
                 modalAnimation={new SlideAnimation({
-                slideFrom: 'bottom',
-                useNativeDriver: true
+                    slideFrom: 'bottom',
                 })}
                 modalStyle={{borderWidth: wp('0.5%'), borderRadius: wp('6%'), borderWidth: 0}}
                 width={0.9} height={0.8} onPressOut={this.props.close}
