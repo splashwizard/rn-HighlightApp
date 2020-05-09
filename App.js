@@ -20,7 +20,7 @@ class App extends Component {
             <Provider store={store}>
                 <NavigationContainer>
                     <Stack.Navigator
-                        initialRouteName="Home"
+                        initialRouteName="Login"
                         screenOptions={{
                             headerShown: false,
                             headerStyle: {

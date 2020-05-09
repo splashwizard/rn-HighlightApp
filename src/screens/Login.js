@@ -100,11 +100,15 @@ class Login extends Component {
                     if(responseJson.messages.length > 0){
                         let messages = [];
                         for(message of responseJson.messages){
-                            url = "https://www.googleapis.com/gmail/v1/users/me/messages/" + message.id;
+                            url = `https://www.googleapis.com/gmail/v1/users/me/messages/${message.id}?format=raw`;
                             fetch(url, header).then((response) => {
                                 return response.json();
                             }).then((responseJson) => {
+                                console.log("this is resposeJson");
+                                console.log(responseJson);
                                 let headers = {};
+                                var real_message = atob(responseJson.raw);
+                                console.log(real_message);
                                 responseJson.payload.headers.forEach(header => {
                                     headers[header.name] = header.value;
                                 });
