@@ -3,11 +3,12 @@ import { View, Text, StyleSheet, Alert, SafeAreaView } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen'
 import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-community/google-signin'
 import NotifService from '../components/NotifService';
-import axios from 'axios';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { createUser, savetoken } from '../redux/actions/userActions';
+
 import { saveMessages } from '../redux/actions/messageActions';
+import base64_decode from '../components/Fuctions'
 
 class Login extends Component {
     state = {
@@ -68,6 +69,11 @@ class Login extends Component {
     onNotif(notif) {
         // Alert.alert(notif.title, notif.message);
     }
+    base64_charIndex = (c) => {
+        if (c == "+") return 62
+        if (c == "/") return 63
+        return b64u.indexOf(c)
+    }
     signIn = async () => {
         try {
             await GoogleSignin.hasPlayServices();
@@ -96,19 +102,18 @@ class Login extends Component {
                     return response.json()
                 })
                 .then((responseJson) => {
-                    console.log(responseJson);
                     if(responseJson.messages.length > 0){
                         let messages = [];
                         for(message of responseJson.messages){
-                            url = `https://www.googleapis.com/gmail/v1/users/me/messages/${message.id}?format=raw`;
+                            url = `https://www.googleapis.com/gmail/v1/users/me/messages/${message.id}`;
                             fetch(url, header).then((response) => {
                                 return response.json();
                             }).then((responseJson) => {
-                                console.log("this is resposeJson");
                                 console.log(responseJson);
                                 let headers = {};
-                                var real_message = atob(responseJson.raw);
-                                console.log(real_message);
+                                var coded_message = responseJson.payload.parts[0].body.data;
+                                let parsed_message = base64_decode(coded_message);
+                                responseJson.message = parsed_message;
                                 responseJson.payload.headers.forEach(header => {
                                     headers[header.name] = header.value;
                                 });
@@ -121,6 +126,7 @@ class Login extends Component {
                                     console.log(responseJson);
                                     responseJson.headers = headers;
                                     messages.push(responseJson);
+                                    console.log("messages");
                                 }
                             }).catch((error) => {
                                 console.log("An error occurred.Please try again",error);
