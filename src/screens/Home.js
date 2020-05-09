@@ -36,6 +36,7 @@ class Home extends Component {
     }
 
     componentDidMount() {
+        console.log(this.props.messages);
         if(this.props.messages.length > 0){
             const message = this.props.messages[0];
             console.log(message);
