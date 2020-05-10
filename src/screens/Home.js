@@ -9,6 +9,8 @@ import StarRating from 'react-native-star-rating';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 
+import defaultheader from './../components/HeaderFunction';
+
 class Home extends Component {
     
     state = {
@@ -19,7 +21,8 @@ class Home extends Component {
         attachment_cnt: 2,
         body: 'Consectetur adipiscing elit. Consectetur adipiscing elit.Consectetur adipiscing elit. Consectetur adipiscing elit.Consectetur adipiscing elit.Consectetur adipiscing elit.',
         label: 'John, Tomas ... ',
-        attachment_urls: ['https://dummyimage.com/300/000/fff', 'https://dummyimage.com/300/000/fff']
+        attachment_urls: ['https://dummyimage.com/300/000/fff', 'https://dummyimage.com/300/000/fff'],
+        attachment_data: []
     }                                                 
 
     onStarRatingPress(rating) {
@@ -36,18 +39,39 @@ class Home extends Component {
     }
 
     componentDidMount() {
-        console.log(this.props.messages);
         if(this.props.messages.length > 0){
             const message = this.props.messages[0];
-            console.log(message);
             // const from_name = message.headers['from_name'];
             // this.setState({from_name});
         }
+        if(this.props.messages[0].attachment==true){
+            let message = this.props.messages[0];
+            let parts = message.payload.parts;
+            let messageId = message.id;
+            const header = defaultheader();
+            header.methon = 'GET';
+
+            for(let v=1; v< parts.length; v++){
+                let attachmentId = parts[v].body.attachmentId;
+                let url = `https://www.googleapis.com/gmail/v1/users/me/messages/${messageId}/attachments/${attachmentId}`;
+                header.headers['Authorization']='Bearer ' + this.props.token;
+                fetch(url, header).then((response) => {
+                    return response.json()
+                })
+                .then(async(responseJson) => {
+                    var attachment_data = this.state.attachment_data;
+                    attachment_data.push(this.tomailformed_base64(responseJson.data));
+                    this.setState({attachment_data: attachment_data});
+                })
+            }
+        }
+    }
+    tomailformed_base64 = (data) => {
+        return data.replace(/_/g, "/").replace(/-/g, "+");
     }
     render() {
-        // if(this.props.messages.length == 0)
-        //     return <View><Text>No Emails</Text></View>
-        const {from_name, subject, attachment_cnt, label, body, attachment_urls} = this.state;
+        console.log(this.state.attachment_data[0]);
+        const {from_name, subject, attachment_cnt, label, attachment_data} = this.state;
         return (
             <SafeAreaView style={{backgroundColor: 'white', flex: 1 }}>
                 <ScrollView>
@@ -86,12 +110,12 @@ class Home extends Component {
                         </View>
                         <View style={styles.bodyContainer}>
                             <Text>
-                                {body}
+                                {this.props.messages[0].message}
                             </Text>
                         </View>
                         {
-                            attachment_urls.map((url, index)=>(
-                                <ImageBackground source={{uri:url}} key={index} style={[{height: hp('30%')},index == attachment_cnt - 1 ? null:{marginBottom: hp('2%')} ]}>
+                            attachment_data.map((uri, index)=>(
+                                <ImageBackground source={{uri:`data:image/png;base64,${uri}`}} key={index} style={[{height: hp('30%')},index == attachment_cnt - 1 ? null:{marginBottom: hp('2%')} ]}>
                                     <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
                                         <TouchableOpacity style={styles.button}>
                                             <Icon name="paperclip" size={wp('5%')} color= 'rgb(150,150,150)' light style={{marginRight: wp('1%')}}/>
@@ -112,7 +136,7 @@ class Home extends Component {
                                 </ImageBackground>
                             ))
                         }
-                    </View>
+                       </View>
                 </ScrollView>
             </SafeAreaView>
         );
@@ -137,7 +161,8 @@ Home.propTypes = {
 const mapStateToProps = state => {
     return {
         user: state.user.user,
-        messages: state.message.messages
+        messages: state.message.messages,
+        token: state.user.token
     }
 }
 

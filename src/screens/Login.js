@@ -101,19 +101,28 @@ class Login extends Component {
                 fetch(url, header).then((response) => {
                     return response.json()
                 })
-                .then((responseJson) => {
+                .then( async (responseJson) => {
                     if(responseJson.messages.length > 0){
                         let messages = [];
                         for(message of responseJson.messages){
                             url = `https://www.googleapis.com/gmail/v1/users/me/messages/${message.id}`;
-                            fetch(url, header).then((response) => {
+                            await fetch(url, header).then((response) => {
                                 return response.json();
                             }).then((responseJson) => {
-                                console.log(responseJson);
                                 let headers = {};
-                                var coded_message = responseJson.payload.parts[0].body.data;
-                                let parsed_message = base64_decode(coded_message);
-                                responseJson.message = parsed_message;
+                                let coded_message = responseJson.payload.parts[0].body.data;
+                                if(coded_message == undefined) {
+                                    let coded_message1 = responseJson.payload.parts[0].parts[0].body.data;
+                                    let parsed_message = base64_decode(coded_message1);
+                                    responseJson.message = parsed_message;
+                                    responseJson.attachment = true;
+                                }
+                                else { 
+                                    let parsed_message = base64_decode(coded_message); 
+                                    responseJson.message = parsed_message;
+                                    responseJson.attachment = false;
+                                }
+                                
                                 responseJson.payload.headers.forEach(header => {
                                     headers[header.name] = header.value;
                                 });
@@ -123,24 +132,23 @@ class Login extends Component {
                                 headers['from_name'] = from_name;
                                 headers['from_email'] = from_email;
                                 if(/@gmail.com>$/.test(headers['From'])){
-                                    console.log(responseJson);
                                     responseJson.headers = headers;
                                     messages.push(responseJson);
-                                    console.log("messages");
                                 }
                             }).catch((error) => {
                                 console.log("An error occurred.Please try again",error);
                             });
                         }
-                        console.log(messages);
                         this.props.saveMessages(messages);
+                        this.props.navigation.navigate("Home")
                     }
                 })
                 .catch((error) => {
                     console.log("An error occurred.Please try again",error);
+                    this.props.navigation.navigate("Home")
                 });
                 // Go To Home Page
-                this.props.navigation.navigate("Home")
+                
             } 
             
         } catch (error) {

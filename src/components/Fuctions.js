@@ -26,3 +26,4 @@ export default function base64_decode(data) {
     dst = decodeURIComponent(escape(dst))
     return dst
 }
+
