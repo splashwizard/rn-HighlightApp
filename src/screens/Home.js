@@ -11,6 +11,7 @@ import { ScrollView, TouchableOpacity, TextInput } from 'react-native-gesture-ha
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { CustomModal } from '../components/modal'
 import moment from 'moment';
+import base64_decode from '../components/Fuctions'
 
 class Snooze extends Component {
     render(){
@@ -33,13 +34,10 @@ import defaultheader from './../components/HeaderFunction';
 class Home extends Component {
     
     state = {
-        from_name: 'John Doe',
         from_email: '',
         subject: 'Updated project numbers1',
         starCount: 3,
-        attachment_cnt: 2,
         body: 'Consectetur adipiscing elit. Consectetur adipiscing elit.Consectetur adipiscing elit. Consectetur adipiscing elit.Consectetur adipiscing elit.Consectetur adipiscing elit.',
-        label: 'John, Tomas ... ',
         attachment_urls: ['https://dummyimage.com/300/000/fff', 'https://dummyimage.com/300/000/fff'],
         attachment_data: [],
         snoozeVisible: false,
@@ -49,7 +47,8 @@ class Home extends Component {
         addLabels: ['Wireframes', 'FreFonts', 'Android', 'Mockups', 'UI', 'Inspiration',
                 'Wireframes', 'FreFonts', 'Android', 'Mockups', 'UI', 'Inspiration',
                 'Wireframes', 'FreFonts', 'Android', 'Mockups', 'UI', 'Inspiration'],
-        new_label: ''
+        new_label: '',
+        messages: []
     }                                                 
 
     onStarRatingPress(rating) {
@@ -66,37 +65,94 @@ class Home extends Component {
     }
 
     componentDidMount() {
-        if(this.props.messages[0].attachment==true){
-            let message = this.props.messages[0];
-            let parts = message.payload.parts;
-            let messageId = message.id;
+        console.log('This is thread list');
+        console.log(this.props.thread_list);
+        if(this.props.thread_list.length > 0){
+            // Load message_list for thread
             const header = defaultheader();
-            header.methon = 'GET';
+            header.method='GET';
+            const thread_id = 0;
+            let url = "https://www.googleapis.com/gmail/v1/users/me/threads/" + this.props.thread_list[thread_id].id;
+            header.headers["Authorization"]= 'Bearer '+ tokens.accessToken;
+            fetch(url, header).then((response) => {
+                return response.json()
+            })
+            .then( async (responseJson) => {
+                console.log('This is message list');
+                console.log(responseJson);
+                let messages = [];
+                for(message of responseJson.messages){
+                    url = `https://www.googleapis.com/gmail/v1/users/me/messages/${message.id}`;
+                    await fetch(url, header).then((response) => {
+                        return response.json();
+                    }).then((responseJson) => {
+                        let headers = {};
+                        let coded_message = responseJson.payload.parts[0].body.data;
+                        if(coded_message == undefined) {
+                            let coded_message1 = responseJson.payload.parts[0].parts[0].body.data;
+                            let parsed_message = base64_decode(coded_message1);
+                            responseJson.message = parsed_message;
+                            responseJson.attachment = true;
+                        }
+                        else {
+                            let parsed_message = base64_decode(coded_message); 
+                            responseJson.message = parsed_message;
+                            responseJson.attachment = false;
+                        }
+                        
+                        responseJson.payload.headers.forEach(header => {
+                            headers[header.name] = header.value;
+                        });
+                        const from = headers['From'];
+                        const from_name = from.slice(0, from.indexOf('<') - 1);
+                        const from_email = from.slice(from.indexOf('<') + 1, from.indexOf('>'));
+                        headers['from_name'] = from_name;
+                        headers['from_email'] = from_email;
+                        if(/@gmail.com>$/.test(headers['From'])){
+                            responseJson.headers = headers;
+                            messages.push(responseJson);
+                        }
+                    }).catch((error) => {
+                        console.log("An error occurred.Please try again",error);
+                    });
+                }
+                this.setState({messages});
+                if( typeof messages[0].attachment !== 'undefined' && messages[0].attachment==true){
+                    let message = messages[0];
+                    let parts = message.payload.parts;
+                    let messageId = message.id;
+                    const header = defaultheader();
+                    header.methon = 'GET';
 
-            for(let v=1; v< parts.length; v++){
-                let attachmentId = parts[v].body.attachmentId;
-                let url = `https://www.googleapis.com/gmail/v1/users/me/messages/${messageId}/attachments/${attachmentId}`;
-                header.headers['Authorization']='Bearer ' + this.props.token;
-                fetch(url, header).then((response) => {
-                    return response.json()
-                })
-                .then(async(responseJson) => {
-                    var attachment_data = this.state.attachment_data;
-                    attachment_data.push(this.tomailformed_base64(responseJson.data));
-                    this.setState({attachment_data: attachment_data});
-                })
-            }
+                    for(let v=1; v< parts.length; v++){
+                        let attachmentId = parts[v].body.attachmentId;
+                        let url = `https://www.googleapis.com/gmail/v1/users/me/messages/${messageId}/attachments/${attachmentId}`;
+                        header.headers['Authorization']='Bearer ' + this.props.token;
+                        fetch(url, header).then((response) => {
+                            return response.json()
+                        })
+                        .then(async(responseJson) => {
+                            var attachment_data = this.state.attachment_data;
+                            attachment_data.push(this.tomailformed_base64(responseJson.data));
+                            this.setState({attachment_data: attachment_data});
+                        })
+                    }
+                }
+                let snoozes = [];
+                snoozes.push({label: 'One Hour', time: moment().add(1, "hour").format('hh:mm A')})
+                snoozes.push({label: 'Later today', time: moment().add(24 - moment().hours(), "hours").format('hh:mm A')})
+                snoozes.push({label: 'Tonight', time: "8:00 PM"})
+                snoozes.push({label: 'Tomorrow', time: moment().add(1, "day").format('ddd, MMM Do hh:mm A')})
+                snoozes.push({label: '7 Days', time: moment().add(7, "days").format('ddd, MMM Do hh:mm A')})
+                snoozes.push({label: '30 Days', time: moment().add(30, "days").format('ddd, MMM Do hh:mm A')})
+                snoozes.push({label: '6 months', time: moment().add(6, "months").format('ddd, MMM Do hh:mm A')})
+                snoozes.push({label: '1 Year', time: moment().add(1, "year").format('ddd, MMM Do hh:mm A')})
+                this.setState({snoozes}); 
+            })
+            .catch((error) => {
+                console.log("An error occurred.Please try again",error);
+            });
         }
-        let snoozes = [];
-        snoozes.push({label: 'One Hour', time: moment().add(1, "hour").format('hh:mm A')})
-        snoozes.push({label: 'Later today', time: moment().add(24 - moment().hours(), "hours").format('hh:mm A')})
-        snoozes.push({label: 'Tonight', time: "8:00 PM"})
-        snoozes.push({label: 'Tomorrow', time: moment().add(1, "day").format('ddd, MMM Do hh:mm A')})
-        snoozes.push({label: '7 Days', time: moment().add(7, "days").format('ddd, MMM Do hh:mm A')})
-        snoozes.push({label: '30 Days', time: moment().add(30, "days").format('ddd, MMM Do hh:mm A')})
-        snoozes.push({label: '6 months', time: moment().add(6, "months").format('ddd, MMM Do hh:mm A')})
-        snoozes.push({label: '1 Year', time: moment().add(1, "year").format('ddd, MMM Do hh:mm A')})
-        this.setState({snoozes});
     }
     tomailformed_base64 = (data) => {
         return data.replace(/_/g, "/").replace(/-/g, "+");
@@ -132,9 +188,14 @@ class Home extends Component {
         this.setState({addLabels});
     }
     render() {
-        // if(this.props.messages.length == 0)
-        //     return <View><Text>No Emails</Text></View>
-        const {from_name, subject, attachment_cnt, label, attachment_data, body, attachment_urls, snoozeVisible, snoozes, labelVisible, appliedLabels, addLabels, new_label} = this.state;
+        const {messages} = this.state;
+        if(messages.length == 0)
+            return <View style={{marginTop: hp('10%')}}><Text>No Emails</Text></View>
+        const {headers} = messages[0];
+        let label = headers['from_name'] + ', me';
+        if( typeof headers['Cc'] != undefined)
+            label += ', ' + headers['Cc'];
+        const {attachment_data, body, attachment_urls, snoozeVisible, snoozes, labelVisible, appliedLabels, addLabels, new_label} = this.state;
         return (
             <SafeAreaView style={{backgroundColor: 'white', flex: 1 }}>
                 <ScrollView>
@@ -142,7 +203,7 @@ class Home extends Component {
                         <View style={styles.userContainer}>
                             <UserAvatar size={wp('20%')} name="Avishay Bar" src="https://dummyimage.com/100x100/000/fff" style={{width: wp('20%'), height: wp('20%'), marginRight: wp('5%')}}/>
                             <View>
-                                <View><Text style={styles.userName}>{from_name}</Text></View>
+                                <View><Text style={styles.userName}>{headers['from_name']}</Text></View>
                                 <View style={{display:'flex', width: wp('60%'), flexDirection: 'row', justifyContent: 'space-between'}}>
                                     <StarRating
                                         disabled={false}
@@ -160,44 +221,26 @@ class Home extends Component {
                             </View>
                         </View>
                         <View style={styles.subjectContainer}>
-                            <Text style={styles.subject}>{subject}</Text>
+                            <Text style={styles.subject}>{messages[0].headers['Subject']}</Text>
                         </View>
                     </View>
                     <View style={{ paddingLeft: wp('5%'), paddingRight: wp('5%')}}>
                         <View style={styles.infoContainer}>
                             <View style={{display:'flex', flexDirection: 'row'}}>
                                 <Icon name="paperclip" size={wp('5%')} color= 'rgb(150,150,150)' style={{marginRight: wp('1%')}}/>
-                                <Text style={{color: 'rgb(150,150,150)'}}>{attachment_cnt}</Text>
+                                <Text style={{color: 'rgb(150,150,150)'}}>{attachment_data.length}</Text>
                             </View>
                             <Text style={{color: 'rgb(150,150,150)'}}>{label}</Text>
                         </View>
                         <View style={styles.bodyContainer}>
                             <Text>
-                                {this.props.messages[0].message}
+                                {messages[0].message}
                             </Text>
                         </View>
                     </View>
                     {
                         attachment_data.map((uri, index)=>(
-                            <ImageBackground source={{uri:`data:image/png;base64,${uri}`}} key={index} style={[{height: hp('30%')},index == attachment_cnt - 1 ? null:{marginBottom: hp('2%')} ]}>
-                                <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
-                                    <TouchableOpacity style={styles.button}>
-                                        <Icon name="paperclip" size={wp('5%')} color= 'rgb(150,150,150)' light style={{marginRight: wp('1%')}}/>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={styles.button}>
-                                        <Icon name="paperclip" size={wp('5%')} color= 'rgb(150,150,150)' light style={{marginRight: wp('1%')}}/>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={styles.button}>
-                                        <Icon name="paperclip" size={wp('5%')} color= 'rgb(150,150,150)' light style={{marginRight: wp('1%')}}/>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={styles.button}>
-                                        <Icon name="paperclip" size={wp('5%')} color= 'rgb(150,150,150)' light style={{marginRight: wp('1%')}}/>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={styles.button}>
-                                        <Icon name="paperclip" size={wp('5%')} color= 'rgb(150,150,150)' light style={{marginRight: wp('1%')}}/>
-                                    </TouchableOpacity>
-                                </View>
-                            </ImageBackground>
+                            <Image source={{uri:`data:image/png;base64,${uri}`}} key={index} style={[{height: hp('30%')},index == attachment_data.length - 1 ? null:{marginBottom: hp('2%')} ]}/>
                         ))
                     }
                     <CustomModal visible={snoozeVisible} close={this.closeSnooze}>
@@ -321,8 +364,8 @@ Home.propTypes = {
 const mapStateToProps = state => {
     return {
         user: state.user.user,
-        messages: state.message.messages,
-        token: state.user.token
+        token: state.user.token,
+        thread_list: state.thread.thread_list
     }
 }
 

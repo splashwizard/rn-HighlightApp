@@ -7,8 +7,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { createUser, savetoken } from '../redux/actions/userActions';
 
-import { saveMessages } from '../redux/actions/messageActions';
-import base64_decode from '../components/Fuctions'
+import { saveThreadList } from '../redux/actions/messageActions';
 
 class Login extends Component {
     state = {
@@ -93,62 +92,22 @@ class Login extends Component {
                     this.onRegister.bind(this),
                     this.onNotif.bind(this),
                 );
-                // Load Gmail Inbox Data
+                // Load Threads Data
                 const header = this.defaultheader();
                 header.method='GET';
-                let url = "https://www.googleapis.com/gmail/v1/users/me/messages";
+                let url = "https://www.googleapis.com/gmail/v1/users/me/threads";
                 header.headers["Authorization"]= 'Bearer '+ tokens.accessToken;
                 fetch(url, header).then((response) => {
                     return response.json()
                 })
                 .then( async (responseJson) => {
-                    if(responseJson.messages.length > 0){
-                        let messages = [];
-                        for(message of responseJson.messages){
-                            url = `https://www.googleapis.com/gmail/v1/users/me/messages/${message.id}`;
-                            await fetch(url, header).then((response) => {
-                                return response.json();
-                            }).then((responseJson) => {
-                                let headers = {};
-                                let coded_message = responseJson.payload.parts[0].body.data;
-                                if(coded_message == undefined) {
-                                    let coded_message1 = responseJson.payload.parts[0].parts[0].body.data;
-                                    let parsed_message = base64_decode(coded_message1);
-                                    responseJson.message = parsed_message;
-                                    responseJson.attachment = true;
-                                }
-                                else { 
-                                    let parsed_message = base64_decode(coded_message); 
-                                    responseJson.message = parsed_message;
-                                    responseJson.attachment = false;
-                                }
-                                
-                                responseJson.payload.headers.forEach(header => {
-                                    headers[header.name] = header.value;
-                                });
-                                const from = headers['From'];
-                                const from_name = from.slice(0, from.indexOf('<') - 1);
-                                const from_email = from.slice(from.indexOf('<') + 1, from.indexOf('>'));
-                                headers['from_name'] = from_name;
-                                headers['from_email'] = from_email;
-                                if(/@gmail.com>$/.test(headers['From'])){
-                                    responseJson.headers = headers;
-                                    messages.push(responseJson);
-                                }
-                            }).catch((error) => {
-                                console.log("An error occurred.Please try again",error);
-                            });
-                        }
-                        this.props.saveMessages(messages);
-                        this.props.navigation.navigate("Home")
-                    }
+                    this.props.saveThreadList(responseJson.threads);
+                    this.props.navigation.navigate("Home");
                 })
                 .catch((error) => {
                     console.log("An error occurred.Please try again",error);
-                    this.props.navigation.navigate("Home")
                 });
-                // Go To Home Page
-                
+                //End Threads
             } 
             
         } catch (error) {
@@ -210,7 +169,7 @@ const styles = StyleSheet.create({
 Login.propTypes = {
     createUser: PropTypes.func.isRequired,
     savetoken: PropTypes.func.isRequired,
-    saveMessages: PropTypes.func.isRequired
+    saveThreadList: PropTypes.func.isRequired
 }
 
-export default connect(null, { createUser, savetoken, saveMessages })(Login);
+export default connect(null, { createUser, savetoken, saveThreadList })(Login);

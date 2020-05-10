@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { SAVE_MESSAGES } from './types'
-export const saveMessages = (messages) => async (dispatch) => {
+import { SAVE_THREAD_LIST } from './types'
+export const saveThreadList = (messages) => async (dispatch) => {
     dispatch({
-        type: SAVE_MESSAGES,
+        type: SAVE_THREAD_LIST,
         payload: messages
     })
 }

@@ -1,15 +1,15 @@
-import { NEW_USER, SAVE_MESSAGES } from '../actions/types'
+import { SAVE_THREAD_LIST } from '../actions/types'
 
 const initialState = {
-    messages: []
+    thread_list: []
 }
 
 export default function(state = initialState, action){
     switch(action.type){
-        case SAVE_MESSAGES:
+        case SAVE_THREAD_LIST:
             return {
                 ...state,
-                messages: action.payload
+                thread_list: action.payload
             }
         default:
             return state;
