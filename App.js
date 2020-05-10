@@ -21,7 +21,7 @@ class App extends Component {
             <Provider store={store}>
                 <NavigationContainer>
                     <Stack.Navigator
-                        initialRouteName="Login"
+                        initialRouteName="Home"
                         screenOptions={{
                             headerShown: false,
                             headerStyle: {

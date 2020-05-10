@@ -159,28 +159,7 @@ class Home extends Component {
                     </View>
                     {
                         attachment_urls.map((url, index)=>(
-                            <ImageBackground source={{uri:url}} key={index} style={[{height: hp('30%')},index == attachment_cnt - 1 ? null:{marginBottom: hp('2%')} ]}>
-                                {
-                                    index !== attachment_cnt - 1 ? null:
-                                    <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: hp('4%'), paddingLeft: wp('5%'), paddingRight: wp('5%')}}>
-                                        <TouchableOpacity style={styles.button}>
-                                            <Icon name="redo" size={wp('5%')} color= 'rgb(150,150,150)' light style={{transform: [{rotateY: '180deg'}]}}/>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity style={styles.button} onPress={this.onPressLabel.bind(this)}>
-                                            <Icon name="tag" size={wp('5%')} color= 'rgb(150,150,150)'/>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity style={styles.button} onPress={this.onPressSnooze.bind(this)}>
-                                            <Icon name="reply" size={wp('5%')} color= 'rgb(150,150,150)'/>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity style={styles.button} onPress={this.onPressReply.bind(this)}>
-                                            <Icon name="reply" size={wp('5%')} color= 'rgb(150,150,150)'/>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity style={styles.button}>
-                                            <Icon name="bars" size={wp('5%')} color= 'rgb(150,150,150)'/>
-                                        </TouchableOpacity>
-                                    </View>
-                                }
-                            </ImageBackground>
+                            <Image source={{uri:url}} key={index} style={[{height: hp('30%')},index == attachment_cnt - 1 ? null:{marginBottom: hp('2%')} ]}/>
                         ))
                     }
                     <CustomModal visible={snoozeVisible} close={this.closeSnooze}>
@@ -233,6 +212,42 @@ class Home extends Component {
                     </CustomModal>
                     
                 </ScrollView>
+                <View style={styles.footer}>
+                    <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', paddingLeft: wp('5%'), paddingRight: wp('5%')}}>
+                        <TouchableOpacity style={styles.button}>
+                            <Icon name="address-book" size={wp('5%')} color= 'rgb(150,150,150)' solid/>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.button}>
+                            <Icon name="inbox" size={wp('5%')} color= 'rgb(150,150,150)'/>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.button}>
+                            <Icon name="cog" size={wp('5%')} color= 'rgb(150,150,150)'/>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.button}>
+                            <Icon name="pencil-alt" size={wp('5%')} color= 'rgb(150,150,150)'/>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.button}>
+                            <Icon name="bars" size={wp('5%')} color= 'rgb(150,150,150)'/>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: hp('4%'), paddingLeft: wp('5%'), paddingRight: wp('5%'), marginBottom: hp('8%')}}>
+                        <TouchableOpacity style={styles.button}>
+                            <Icon name="redo" size={wp('5%')} color= 'rgb(150,150,150)' light style={{transform: [{rotateY: '180deg'}]}}/>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.button} onPress={this.onPressLabel.bind(this)}>
+                            <Icon name="tag" size={wp('5%')} color= 'rgb(150,150,150)'/>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.button} onPress={this.onPressSnooze.bind(this)}>
+                            <Icon name="reply" size={wp('5%')} color= 'rgb(150,150,150)'/>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.button} onPress={this.onPressReply.bind(this)}>
+                            <Icon name="reply" size={wp('5%')} color= 'rgb(150,150,150)'/>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.button}>
+                            <Icon name="bars" size={wp('5%')} color= 'rgb(150,150,150)'/>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </SafeAreaView>
         );
     }
@@ -247,6 +262,8 @@ const styles = StyleSheet.create({
     infoContainer: {marginTop: hp('1%'), display: 'flex', flexDirection: 'row', justifyContent: 'space-between', color: 'rgb(220,220,220)' },
     bodyContainer: {marginTop: hp('2%'), marginBottom: hp('2%')},
     button: {width:wp('12%'), height: wp('12%'), borderRadius: wp('6%'), backgroundColor: 'rgb(220, 220, 220)', justifyContent: 'center', alignItems:'center'},
+
+    footer: {position: 'absolute', bottom: 0, height: hp('20%'), width: '100%'},
 
     snoozeContainer: {height: hp('5%'), display: 'flex', justifyContent: 'flex-end', borderBottomColor: 'rgb(160,160,160)', borderBottomWidth: hp('0.1%')},
     snoozeLabel: {fontWeight: 'bold', fontSize: hp('1.8%')},
