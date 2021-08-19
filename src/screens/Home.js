@@ -18,7 +18,7 @@ class Snooze extends Component {
         const {leftLabel, rightLabel} = this.props;
         return(
            <View style={snoozeStyles.container}>
-               <Text>{leftLabel}</Text>
+               <Text>{leftLabel}</Text> //
                <Text>{rightLabel}</Text>
            </View>
         ) 
